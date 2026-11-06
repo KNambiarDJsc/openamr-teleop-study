@@ -114,11 +114,18 @@ These are suggestions from simulation, for discussion:
    targets in an origin frame of the OpenArm model, which has no lift, so mounted here it gets this behaviour
    without changes.
 2. **Treat the lift as a repositioning move, not a tracking joint.** At 18 mm/s, raising the hands 10 cm takes
-   5.6 s. Moving it between operator actions, like a clutch, matches that better than following the hand.
-3. **If a world-fixed hold is wanted** (for example, keeping a held object level while the body rises), check
-   reachability along the stroke first, stop the lift before the hold breaks, and report it. Don't let an IK
-   failure quietly turn the hold into a carried arm.
-4. **After anything moves under a held target, re-anchor to the measured pose,** not the held one.
+   5.6 s. This matches the platform's own rule: per the SRDF, register LIFT allows lift motion only in the
+   stowed or carry pose with the base stopped, enforced by the lift firmware (CTL-017). The results above show
+   what happens without that rule, and a clutch anchored in the arm-mount frame is what makes a re-grip after a
+   between-task lift move continuous.
+3. **Consider the same rule in simulation.** The SRDF notes that the A7 scenario respects it by design, not by an
+   interlock, and these runs confirm `lift_controller` accepts a goal with an arm engaged. A sim-side guard that
+   refuses lift goals outside the stowed and carry poses would make simulated teleoperation behave like the
+   hardware.
+4. **If a world-fixed hold is ever wanted while the lift moves,** check reachability along the stroke first,
+   stop the lift before the hold breaks, and report it. Don't let an IK failure quietly turn the hold into a
+   carried arm.
+5. **After anything moves under a held target, re-anchor to the measured pose,** not the held one.
 
 ## Limits
 
